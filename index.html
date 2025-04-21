@@ -269,27 +269,6 @@
                     <h5>Event Generator Controls</h5>
                 </div>
                 <div class="card-body">
-                    <!-- Run Mode Selection (moved outside event type) -->
-                    <div class="mb-3">
-                        <label class="form-label">Run Mode</label>
-                        <select id="runMode" class="form-select" onchange="toggleIterationInputs()">
-                            <option value="single">Single Run</option>
-                            <option value="multiple">Multiple Runs</option>
-                        </select>
-                    </div>
-
-                    <!-- Iteration Controls (moved outside event type) -->
-                    <div id="iterationControls" class="hidden">
-                        <div class="mb-3">
-                            <label class="form-label">Number of Iterations</label>
-                            <input type="number" id="iterations" class="form-control" min="1" max="100" value="1">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Delay Between Iterations (seconds)</label>
-                            <input type="number" id="delay" class="form-control" min="0" max="3600" value="300">
-                        </div>
-                    </div>
-
                     <!-- Event Type Selection -->
                     <div class="mb-3">
                         <label class="form-label">Event Type</label>
@@ -408,6 +387,28 @@
                         <div class="mb-3">
                             <label class="form-label">Payload Preview</label>
                             <pre id="previewPayload" class="payload-preview"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Run Mode and Iteration Controls (moved after both standard and custom controls) -->
+                    <div class="mb-4">
+                        <div class="mb-3">
+                            <label class="form-label">Run Mode</label>
+                            <select id="runMode" class="form-select" onchange="toggleIterationInputs()">
+                                <option value="single">Single Run</option>
+                                <option value="multiple">Multiple Runs</option>
+                            </select>
+                        </div>
+
+                        <div id="iterationControls" class="hidden">
+                            <div class="mb-3">
+                                <label class="form-label">Number of Iterations</label>
+                                <input type="number" id="iterations" class="form-control" min="1" max="100" value="1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Delay Between Iterations (seconds)</label>
+                                <input type="number" id="delay" class="form-control" min="0" max="3600" value="300">
+                            </div>
                         </div>
                     </div>
 
@@ -625,6 +626,10 @@
             standardControls.classList.toggle('hidden', eventType !== 'standard');
             customControls.classList.toggle('hidden', eventType !== 'custom');
             
+            // Keep iteration controls visible when switching modes
+            const runMode = document.getElementById('runMode').value;
+            document.getElementById('iterationControls').classList.toggle('hidden', runMode === 'single');
+            
             if (eventType === 'custom') {
                 updatePayloadPreview();
             }
@@ -632,8 +637,8 @@
 
         function toggleIterationInputs() {
             const iterationControls = document.getElementById('iterationControls');
-            iterationControls.classList.toggle('hidden', 
-                document.getElementById('runMode').value === 'single');
+            const runMode = document.getElementById('runMode').value;
+            iterationControls.classList.toggle('hidden', runMode === 'single');
         }
 
         function updatePayloadPreview() {

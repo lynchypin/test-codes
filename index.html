@@ -269,6 +269,27 @@
                     <h5>Event Generator Controls</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Run Mode Selection (moved outside event type) -->
+                    <div class="mb-3">
+                        <label class="form-label">Run Mode</label>
+                        <select id="runMode" class="form-select" onchange="toggleIterationInputs()">
+                            <option value="single">Single Run</option>
+                            <option value="multiple">Multiple Runs</option>
+                        </select>
+                    </div>
+
+                    <!-- Iteration Controls (moved outside event type) -->
+                    <div id="iterationControls" class="hidden">
+                        <div class="mb-3">
+                            <label class="form-label">Number of Iterations</label>
+                            <input type="number" id="iterations" class="form-control" min="1" max="100" value="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Delay Between Iterations (seconds)</label>
+                            <input type="number" id="delay" class="form-control" min="0" max="3600" value="300">
+                        </div>
+                    </div>
+
                     <!-- Event Type Selection -->
                     <div class="mb-3">
                         <label class="form-label">Event Type</label>
@@ -293,14 +314,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Run Mode</label>
-                            <select id="runMode" class="form-select" onchange="toggleIterationInputs()">
-                                <option value="single">Single Run</option>
-                                <option value="multiple">Multiple Runs</option>
-                            </select>
                         </div>
 
                         <div class="mb-3">
@@ -398,16 +411,6 @@
                         </div>
                     </div>
 
-                    <div id="iterationControls" class="hidden">
-                        <div class="mb-3">
-                            <label class="form-label">Number of Iterations</label>
-                            <input type="number" id="iterations" class="form-control" min="1" max="100" value="1">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Delay Between Iterations (seconds)</label>
-                            <input type="number" id="delay" class="form-control" min="0" max="3600" value="300">
-                        </div>
-                    </div>
                     <button onclick="startGenerator()" class="btn btn-primary">Start Generator</button>
                     <button onclick="stopGenerator()" class="btn btn-danger" disabled>Stop Generator</button>
                 </div>
@@ -602,7 +605,6 @@
             document.getElementById('specificKeys').innerHTML = standardKeysHtml;
             document.getElementById('customSpecificKeys').innerHTML = customKeysHtml;
         }
-
         function saveAndContinue() {
             if (routingKeys.length > 0) {
                 localStorage.setItem('pdRoutingKeys', JSON.stringify(routingKeys));
@@ -634,7 +636,7 @@
                 document.getElementById('runMode').value === 'single');
         }
 
-function updatePayloadPreview() {
+        function updatePayloadPreview() {
             let customDetails = {};
             try {
                 const customDetailsText = document.getElementById('customDetailsText').value;
@@ -802,6 +804,28 @@ function updatePayloadPreview() {
             runStandardIteration();
         }
 
+        function startCustomGenerator() {
+            const keySelectionMode = document.getElementById('customKeySelectionMode').value;
+            if (keySelectionMode === 'specific') {
+                const selectedKeys = getSelectedKeys('custom');
+                if (selectedKeys.length === 0) {
+                    alert('Please select at least one key in specific mode');
+                    return;
+                }
+                selectedKeysQueue = [...selectedKeys];
+                totalSelectedKeys = selectedKeys.length;
+            }
+
+            isRunning = true;
+            document.querySelector('button[onclick="startGenerator()"]').disabled = true;
+            document.querySelector('button[onclick="stopGenerator()"]').disabled = false;
+
+            const runMode = document.getElementById('runMode').value;
+            totalIterations = runMode === 'single' ? 1 : parseInt(document.getElementById('iterations').value);
+            currentIteration = 0;
+            runCustomIteration();
+        }
+
         function runStandardIteration() {
             if (!isRunning) return;
 
@@ -869,28 +893,6 @@ function updatePayloadPreview() {
                 stopGenerator();
                 logStatus('Generator completed all iterations');
             }
-        }
-
-        function startCustomGenerator() {
-            const keySelectionMode = document.getElementById('customKeySelectionMode').value;
-            if (keySelectionMode === 'specific') {
-                const selectedKeys = getSelectedKeys('custom');
-                if (selectedKeys.length === 0) {
-                    alert('Please select at least one key in specific mode');
-                    return;
-                }
-                selectedKeysQueue = [...selectedKeys];
-                totalSelectedKeys = selectedKeys.length;
-            }
-
-            isRunning = true;
-            document.querySelector('button[onclick="startGenerator()"]').disabled = true;
-            document.querySelector('button[onclick="stopGenerator()"]').disabled = false;
-
-            const runMode = document.getElementById('runMode').value;
-            totalIterations = runMode === 'single' ? 1 : parseInt(document.getElementById('iterations').value);
-            currentIteration = 0;
-            runCustomIteration();
         }
 
         function runCustomIteration() {
